@@ -9,9 +9,6 @@
 
         body {
             height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             font-family: Georgia, serif;
             overflow: hidden;
         }
@@ -54,15 +51,34 @@
             text-transform: uppercase;
         }
 
-        .badge {
-            margin-top: 30px;
-            display: inline-block;
-            background: rgba(255,255,255,0.15);
-            border: 2px solid white;
-            padding: 12px 30px;
-            border-radius: 50px;
-            font-size: 1em;
+        .countdown {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .countdown-box {
+            background: rgba(0,0,0,0.45);
+            border: 2px solid rgba(255,255,255,0.4);
+            border-radius: 12px;
+            padding: 12px 20px;
+            min-width: 80px;
+        }
+
+        .countdown-box span {
+            display: block;
+            font-size: 2.2em;
+            font-weight: bold;
+            color: #f0c060;
+            line-height: 1;
+        }
+
+        .countdown-box small {
+            font-size: 0.75em;
+            color: #ccc;
             letter-spacing: 1px;
+            text-transform: uppercase;
         }
     </style>
 </head>
@@ -73,9 +89,53 @@
         <div class="hero-text">
             <h1>Więcej uśmiechu,<br>panie Tomku! 😄</h1>
             <p>KetoDżek grasuje w pobliżu</p>
-            <div class="badge">⏳ Niedługo start!</div>
+            <div class="countdown">
+                <div class="countdown-box">
+                    <span id="days">00</span>
+                    <small>dni</small>
+                </div>
+                <div class="countdown-box">
+                    <span id="hours">00</span>
+                    <small>godz</small>
+                </div>
+                <div class="countdown-box">
+                    <span id="minutes">00</span>
+                    <small>min</small>
+                </div>
+                <div class="countdown-box">
+                    <span id="seconds">00</span>
+                    <small>sek</small>
+                </div>
+            </div>
         </div>
     </div>
+
+    <script>
+        const target = new Date('2026-06-14T07:00:00');
+
+        function update() {
+            const now = new Date();
+            const diff = target - now;
+
+            if (diff <= 0) {
+                document.querySelector('.countdown').innerHTML = '<p style="color:#f0c060;font-size:1.5em">🎉 Już jesteśmy!</p>';
+                return;
+            }
+
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.getElementById('days').textContent = String(days).padStart(2, '0');
+            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+        }
+
+        update();
+        setInterval(update, 1000);
+    </script>
 
 </body>
 </html>
