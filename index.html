@@ -2,449 +2,443 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TomCip.pl – PCKP</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { height: 100vh; font-family: Georgia, serif; overflow: hidden; }
+        body { height: 100vh; font-family: Georgia, serif; overflow: hidden; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
+        /* HERO */
         .hero { position: relative; width: 100%; height: 100vh; }
         .hero img { width: 100%; height: 100%; object-fit: cover; object-position: center center; filter: brightness(0.5); }
-        .hero-text { position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; width: 60%; }
-        .hero-text h1 { font-size: 2.2em; line-height: 1.3; text-shadow: 3px 3px 10px rgba(0,0,0,0.9); margin-bottom: 20px; }
+        .hero-text { position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; width: 90%; }
+        .hero-text h1 { font-size: clamp(1.1em, 4vw, 2.2em); line-height: 1.4; text-shadow: 3px 3px 10px rgba(0,0,0,0.9); margin-bottom: 20px; }
         .hero-text h1 span { color: #f0c060; }
-        .enter-btn { display: inline-block; background: #8b1a1a; color: white; border: 3px solid #f0c060; padding: 16px 44px; border-radius: 50px; font-size: 1.1em; font-family: Georgia, serif; font-weight: bold; cursor: pointer; letter-spacing: 1px; transition: background 0.2s; }
-        .enter-btn:hover { background: #a02020; }
+        .enter-btn { display: inline-block; background: #8b1a1a; color: white; border: 3px solid #f0c060; padding: 14px 36px; border-radius: 50px; font-size: clamp(0.9em, 3vw, 1.1em); font-family: Georgia, serif; font-weight: bold; cursor: pointer; letter-spacing: 1px; transition: background 0.2s; }
+        .enter-btn:hover, .enter-btn:active { background: #a02020; }
 
-        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
+        /* OVERLAY / MODAL */
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
         .overlay.active { display: flex; }
-        .modal { background: #1a1a1a; border: 2px solid #f0c060; border-radius: 16px; padding: 40px; text-align: center; color: white; max-width: 420px; width: 90%; }
-        .modal h2 { font-size: 1.6em; margin-bottom: 10px; color: #f0c060; }
-        .modal p { font-size: 1.1em; margin-bottom: 24px; color: #ccc; line-height: 1.5; }
-        .modal input { width: 100%; padding: 12px 16px; border-radius: 8px; border: 2px solid #f0c060; background: #2a2a2a; color: white; font-size: 1.1em; text-align: center; font-family: Georgia, serif; margin-bottom: 16px; outline: none; }
-        .modal button { background: #8b1a1a; color: white; border: 2px solid #f0c060; padding: 12px 36px; border-radius: 50px; font-size: 1em; font-weight: bold; cursor: pointer; font-family: Georgia, serif; }
-        .modal button:hover { background: #a02020; }
-        .error { color: #ff6b6b; margin-top: 12px; font-size: 0.95em; min-height: 20px; }
+        .modal { background: #1a1a1a; border: 2px solid #f0c060; border-radius: 16px; padding: 30px 24px; text-align: center; color: white; max-width: 420px; width: 100%; }
+        .modal h2 { font-size: clamp(1.2em, 4vw, 1.6em); margin-bottom: 10px; color: #f0c060; }
+        .modal p { font-size: clamp(0.95em, 3vw, 1.1em); margin-bottom: 20px; color: #ccc; line-height: 1.5; }
+        .modal input { width: 100%; padding: 14px 16px; border-radius: 8px; border: 2px solid #f0c060; background: #2a2a2a; color: white; font-size: 1.1em; text-align: center; font-family: Georgia, serif; margin-bottom: 16px; outline: none; }
+        .modal button { background: #8b1a1a; color: white; border: 2px solid #f0c060; padding: 14px 36px; border-radius: 50px; font-size: 1em; font-weight: bold; cursor: pointer; font-family: Georgia, serif; }
+        .modal button:active { background: #a02020; }
+        .error-msg { color: #ff6b6b; margin-top: 12px; font-size: 0.95em; min-height: 20px; }
 
+        /* MIRO */
         .miro-scene { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 300; overflow: hidden; align-items: center; justify-content: center; }
         .miro-scene.active { display: flex; }
-        .miro-img { position: absolute; bottom: 10%; left: -350px; width: 320px; transition: left 2s ease-in-out; }
+        .miro-img { position: absolute; bottom: 10%; left: -110%; width: min(320px, 60vw); transition: left 2s ease-in-out; }
         .miro-img.jedzie { left: 110%; }
 
-        /* GRA UCIECZKA */
-        #gra-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 400; flex-direction: column; align-items: center; justify-content: center; }
-        #gra-screen.active { display: flex; }
-        #gra-screen h2 { color: #f0c060; font-size: 1.5em; margin-bottom: 6px; }
-        #gra-screen p { color: #ccc; font-size: 0.95em; margin-bottom: 12px; }
-        #gameCanvas { border: 3px solid #f0c060; border-radius: 8px; }
-        #odliczanie { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 5em; color: #ff4444; font-weight: bold; text-shadow: 0 0 20px #ff0000; z-index: 10; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
-        #odliczanie.show { opacity: 1; }
+        /* GRY */
+        .gra-ekran { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 400; flex-direction: column; align-items: center; justify-content: center; padding: 8px; }
+        .gra-ekran.active { display: flex; }
+        .gra-ekran h2 { color: #f0c060; font-size: clamp(0.95em, 3.5vw, 1.4em); margin-bottom: 4px; text-align: center; }
+        .gra-ekran p { color: #ccc; font-size: clamp(0.7em, 2.2vw, 0.9em); margin-bottom: 8px; text-align: center; }
+        canvas { border: 3px solid #f0c060; border-radius: 8px; width: 100%; max-width: 580px; max-height: 42vh; }
 
-        /* GRA WALKA */
-        #walka-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 400; flex-direction: column; align-items: center; justify-content: center; }
-        #walka-screen.active { display: flex; }
-        #walka-screen h2 { color: #f0c060; font-size: 1.5em; margin-bottom: 6px; }
-        #walka-screen p { color: #ccc; font-size: 0.9em; margin-bottom: 12px; }
-        #walkaCanvas { border: 3px solid #f0c060; border-radius: 8px; }
+        .mobile-controls { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
+        .mob-btn { background: rgba(139,26,26,0.9); color: white; border: 2px solid #f0c060; border-radius: 12px; padding: clamp(10px,3vw,14px) clamp(16px,4vw,22px); font-size: clamp(1em, 4vw, 1.3em); cursor: pointer; user-select: none; -webkit-user-select: none; min-width: 56px; text-align: center; }
+        .mob-btn:active { background: #a02020; transform: scale(0.95); }
+        .mob-btn-attack { background: rgba(180,80,0,0.9); }
+
+        .start-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 5; align-items: center; justify-content: center; border-radius: 6px; }
+        .start-overlay.active { display: flex; }
+        .start-btn-big { background: #8b1a1a; color: white; border: 3px solid #f0c060; padding: 16px 44px; border-radius: 50px; font-size: clamp(1.1em, 4vw, 1.5em); font-family: Georgia, serif; font-weight: bold; cursor: pointer; }
+        .start-btn-big:active { background: #a02020; }
 
         /* KONIEC ZŁY */
-        #koniec-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0000; z-index: 500; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; }
+        #koniec-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0000; z-index: 500; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
         #koniec-screen.active { display: flex; }
-        #koniec-screen .wielki { font-size: 2.5em; color: #ff3333; font-weight: bold; text-shadow: 0 0 20px #ff0000; line-height: 1.3; margin-bottom: 20px; animation: blink 0.8s infinite; }
-        #koniec-screen .maly { font-size: 1.4em; color: #f0c060; margin-top: 10px; }
-        #koniec-screen img { width: 200px; margin-bottom: 20px; border-radius: 12px; }
-        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+        #koniec-screen img { width: min(160px, 38vw); margin-bottom: 16px; border-radius: 12px; }
+        .wielki-zly { font-size: clamp(1.2em, 5vw, 2.2em); color: #ff3333; font-weight: bold; text-shadow: 0 0 20px #ff0000; line-height: 1.3; margin-bottom: 16px; animation: blink 0.8s infinite; }
+        .maly-zly { font-size: clamp(0.9em, 3vw, 1.3em); color: #f0c060; margin-top: 8px; }
+        @keyframes blink { 0%,100%{opacity:1;}50%{opacity:0.3;} }
 
-        /* KONIEC DOBRY */
-        #wygrana-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a1a0a; z-index: 500; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; }
+        /* ERROR */
+        #error-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 600; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+        #error-screen.active { display: flex; }
+        .error-licznik-box { margin-bottom: 24px; }
+        .error-licznik-label { font-size: clamp(1em, 3vw, 1.3em); color: #ff4444; font-family: monospace; letter-spacing: 2px; }
+        .error-licznik-val { font-size: clamp(5em, 18vw, 10em); color: #ff0000; font-weight: bold; font-family: monospace; line-height: 1; text-shadow: 0 0 30px #ff0000; animation: blink 1s infinite; }
+        .error-box { background: #1a0000; border: 3px solid #ff0000; border-radius: 16px; padding: 24px 20px; max-width: 480px; width: 100%; }
+        .error-fenkju { font-size: clamp(1.5em, 5vw, 2.5em); color: #ff6600; font-weight: bold; margin-bottom: 12px; animation: blink 1s infinite; line-height: 1.3; }
+        .error-kod { font-size: clamp(2.5em, 8vw, 4em); color: #ff0000; font-weight: bold; font-family: monospace; }
+        .error-tytul { font-size: clamp(0.85em, 2.5vw, 1.1em); color: #ff4444; margin: 8px 0; font-family: monospace; }
+        .error-opis { font-size: clamp(0.8em, 2vw, 0.95em); color: #666; font-family: monospace; }
+        .error-podpis { font-size: clamp(0.9em, 2.5vw, 1.1em); color: #ff6600; margin-top: 16px; font-weight: bold; border-top: 1px solid #ff0000; padding-top: 14px; }
+
+        /* WYGRANA — Tomek jako tło */
+        #wygrana-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 500; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; overflow: hidden; }
         #wygrana-screen.active { display: flex; }
-        #wygrana-screen img { width: 220px; margin-bottom: 20px; border-radius: 16px; border: 4px solid #f0c060; }
-        #wygrana-screen .wielki-dobry { font-size: 2.2em; color: #f0c060; font-weight: bold; line-height: 1.3; margin-bottom: 10px; animation: glow 1.5s infinite; }
-        #wygrana-screen .liczba { font-size: 1.3em; color: #aaffaa; margin-top: 10px; }
-        @keyframes glow { 0%,100% { text-shadow: 0 0 10px #f0c060; } 50% { text-shadow: 0 0 30px #f0c060, 0 0 60px #ffaa00; } }
+        #wygrana-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; filter: brightness(0.45); z-index: 0; }
+        #wygrana-content { position: relative; z-index: 1; opacity: 0; transform: translateY(30px); transition: opacity 1s ease, transform 1s ease; max-width: 560px; width: 100%; }
+        #wygrana-content.pokaz { opacity: 1; transform: translateY(0); }
+        .fenkju-napis { font-size: clamp(2em, 8vw, 4em); color: white; font-weight: bold; text-shadow: 3px 3px 12px rgba(0,0,0,0.9); margin-bottom: 8px; }
+        .zapraszamy { font-size: clamp(1em, 3.5vw, 1.5em); color: #f0c060; margin-bottom: 16px; text-shadow: 2px 2px 8px rgba(0,0,0,0.9); }
+        .wielki-dobry { font-size: clamp(1.3em, 4.5vw, 2em); color: white; font-weight: bold; line-height: 1.3; margin-bottom: 8px; text-shadow: 3px 3px 10px rgba(0,0,0,0.9); animation: glow 1.5s infinite; }
+        .liczba-wygranych { font-size: clamp(1em, 3vw, 1.3em); color: #aaffaa; margin-bottom: 24px; text-shadow: 2px 2px 6px rgba(0,0,0,0.9); }
+        .rejestruj-btn { display: inline-block; background: #f0c060; color: #1a1a1a; border: none; padding: 16px 44px; border-radius: 50px; font-size: clamp(1em, 3.5vw, 1.3em); font-family: Georgia, serif; font-weight: bold; cursor: pointer; letter-spacing: 1px; box-shadow: 0 0 20px rgba(240,192,96,0.6); }
+        .rejestruj-btn:active { background: #e0a830; transform: scale(0.97); }
+        @keyframes glow { 0%,100%{text-shadow:0 0 10px #f0c060;}50%{text-shadow:0 0 30px #f0c060,0 0 60px #ffaa00;} }
 
         /* LICZNIKI */
-        #licznik { display: none; position: fixed; top: 15px; right: 15px; background: rgba(0,0,0,0.75); border: 2px solid #ff4444; border-radius: 10px; padding: 10px 16px; color: white; font-size: 0.85em; z-index: 999; text-align: center; }
-        #licznik span { display: block; font-size: 1.6em; color: #ff4444; font-weight: bold; }
-        #licznikDobry { display: none; position: fixed; top: 15px; left: 15px; background: rgba(0,0,0,0.75); border: 2px solid #f0c060; border-radius: 10px; padding: 10px 16px; color: white; font-size: 0.85em; z-index: 999; text-align: center; }
-        #licznikDobry span { display: block; font-size: 1.6em; color: #f0c060; font-weight: bold; }
+        #licznikDobry { display: none; position: fixed; top: 15px; left: 15px; background: rgba(0,0,0,0.8); border: 2px solid #f0c060; border-radius: 10px; padding: 8px 14px; color: white; font-size: 0.8em; z-index: 999; text-align: center; }
+        #licznikDobry span { display: block; font-size: 1.5em; color: #f0c060; font-weight: bold; }
+        #licznikZly { display: none; position: fixed; top: 15px; right: 15px; background: rgba(0,0,0,0.8); border: 2px solid #ff4444; border-radius: 10px; padding: 8px 14px; color: white; font-size: 0.8em; z-index: 999; text-align: center; }
+        #licznikZly span { display: block; font-size: 1.5em; color: #ff4444; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <audio id="muzyka" src="muzyka.mp3" loop></audio>
-    <audio id="walka" src="walka.mp3" loop></audio>
+<audio id="muzyka" src="muzyka.mp3" loop></audio>
+<audio id="walka" src="walka.mp3" loop></audio>
 
-    <div id="licznik">💀 Konfidenci Dżeka<span id="licznikVal">0</span></div>
-    <div id="licznikDobry">💪 Tomek uratowany<span id="licznikDobryVal">0</span></div>
+<div id="licznikDobry">💪 Tomek uratowany<span id="licznikDobryVal">0</span></div>
+<div id="licznikZly">💀 Konfidenci<span id="licznikZlyVal">0</span></div>
 
-    <div class="hero">
-        <img src="tlo.jpg" alt="PCKP">
-        <div class="hero-text">
-            <h1>Witamy na stronie grupy<br><span>PCKP</span><br>Jeżeli uważasz że jesteś gotowy<br>dołączyć do walki z Dżekim</h1>
-            <button class="enter-btn" onclick="pokazZagadke()">👊 Kliknij tutaj</button>
+<!-- STRONA GŁÓWNA -->
+<div class="hero">
+    <img src="tlo.jpg" alt="PCKP">
+    <div class="hero-text">
+        <h1>Witamy na stronie grupy<br><span>PCKP</span><br>Jeżeli uważasz że jesteś gotowy<br>dołączyć do walki z Dżekim</h1>
+        <button class="enter-btn" onclick="pokazZagadke()">👊 Kliknij tutaj</button>
+    </div>
+</div>
+
+<!-- ZAGADKA -->
+<div class="overlay" id="overlay">
+    <div class="modal">
+        <h2>🔐 Zagadka</h2>
+        <p>Jakim chlebem jest Dżek?</p>
+        <input type="text" id="odpowiedz" placeholder="Wpisz odpowiedź...">
+        <br>
+        <button onclick="sprawdzOdpowiedz()">Sprawdź →</button>
+        <div class="error-msg" id="errorMsg"></div>
+    </div>
+</div>
+
+<!-- MIRO -->
+<div class="miro-scene" id="miroScene">
+    <img class="miro-img" id="miroImg" src="miro.jpg" alt="Miro Tiro">
+</div>
+
+<!-- GRA UCIECZKA -->
+<div class="gra-ekran" id="gra-screen">
+    <h2>🎮 UCIEKAJ PRZED DŻEKIEM!</h2>
+    <p>Strzałki / WASD lub przyciski poniżej</p>
+    <div style="position:relative;display:inline-block;width:100%;max-width:580px;">
+        <canvas id="gameCanvas" width="580" height="320"></canvas>
+        <div class="start-overlay active" id="startUcieczka">
+            <button class="start-btn-big" onclick="startUcieczka()">▶ START</button>
         </div>
     </div>
-
-    <div class="overlay" id="overlay">
-        <div class="modal">
-            <h2>🔐 Zagadka</h2>
-            <p>Jakim chlebem jest Dżek?</p>
-            <input type="text" id="odpowiedz" placeholder="Wpisz odpowiedź..." />
-            <br>
-            <button onclick="sprawdzOdpowiedz()">Sprawdź →</button>
-            <div class="error" id="error"></div>
+    <div class="mobile-controls">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+            <button class="mob-btn" id="btnU">⬆️</button>
+            <div style="display:flex;gap:8px;">
+                <button class="mob-btn" id="btnL">⬅️</button>
+                <button class="mob-btn" id="btnD">⬇️</button>
+                <button class="mob-btn" id="btnR">➡️</button>
+            </div>
         </div>
     </div>
+</div>
 
-    <div class="miro-scene" id="miroScene">
-        <img class="miro-img" id="miroImg" src="miro.jpg" alt="Miro Tiro">
-    </div>
-
-    <!-- GRA UCIECZKA -->
-    <div id="gra-screen">
-        <h2>🎮 UCIEKAJ PRZED DŻEKIEM!</h2>
-        <p>Strzałki lub WASD — masz 3 sekundy przewagi!</p>
-        <div style="position:relative; display:inline-block;">
-            <canvas id="gameCanvas" width="600" height="380"></canvas>
-            <div id="odliczanie">3</div>
+<!-- GRA WALKA -->
+<div class="gra-ekran" id="walka-screen">
+    <h2>⚔️ WALCZ Z DŻEKIEM!</h2>
+    <p>⬅️➡️ ruch | 🗡️ atak — zbliż się i bij!</p>
+    <div style="position:relative;display:inline-block;width:100%;max-width:580px;">
+        <canvas id="walkaCanvas" width="580" height="280"></canvas>
+        <div class="start-overlay active" id="startWalka">
+            <button class="start-btn-big" onclick="startWalkaGra()">▶ START WALKI</button>
         </div>
     </div>
-
-    <!-- GRA WALKA -->
-    <div id="walka-screen">
-        <h2>⚔️ WALCZ Z DŻEKIEM!</h2>
-        <p>A/D = ruch | Spacja = atak | Pokonaj Dżeka!</p>
-        <canvas id="walkaCanvas" width="600" height="380"></canvas>
+    <div class="mobile-controls">
+        <button class="mob-btn" id="wbtnL">⬅️</button>
+        <button class="mob-btn mob-btn-attack" id="wbtnAtk">🗡️ ATAK</button>
+        <button class="mob-btn" id="wbtnR">➡️</button>
     </div>
+</div>
 
-    <!-- KONIEC ZŁY -->
-    <div id="koniec-screen">
-        <img src="dzeko.jpg" alt="Keto Dżeko">
-        <div class="wielki">NIC NIE MÓW!<br>NIC NIE MÓW!<br>NIE POGORSZAJ SWOJEJ SYTUACJI!</div>
-        <div class="maly">A TERAZ WYPIERDALAJ CZŁOWIEKU DŻEKA!!! 🍞</div>
+<!-- KONIEC ZŁY -->
+<div id="koniec-screen">
+    <img src="dzeko.jpg" alt="Keto Dżeko">
+    <div class="wielki-zly">NIC NIE MÓW!<br>NIC NIE MÓW!<br>NIE POGORSZAJ SWOJEJ SYTUACJI!</div>
+    <div class="maly-zly">A TERAZ WYPIERDALAJ CZŁOWIEKU DŻEKA!!! 🍞</div>
+</div>
+
+<!-- ERROR -->
+<div id="error-screen">
+    <div class="error-licznik-box">
+        <div class="error-licznik-label">💀 KONFIDENCI DŻEKA</div>
+        <div class="error-licznik-val" id="errorLicznikVal">0</div>
     </div>
+    <div class="error-box">
+        <div class="error-fenkju">FENK JU ZA WSZYSTKIE<br>TWOJE DANE! 😂</div>
+        <div class="error-kod">404</div>
+        <div class="error-tytul">KONFIDENT_NOT_WELCOME.exe</div>
+        <div class="error-opis">Dostęp zabroniony. Nieprawidłowe hasło.<br>Twoja kandydatura została odrzucona.</div>
+        <div class="error-podpis">❌ Nie potrzebujemy Cię<br>w naszym składzie, konfidencie.</div>
+    </div>
+</div>
 
-    <!-- KONIEC DOBRY -->
-    <div id="wygrana-screen">
-        <img src="tomek.jpg" alt="Pan Tomek">
+<!-- WYGRANA -->
+<div id="wygrana-screen">
+    <img id="wygrana-bg" src="tomek.jpg" alt="Pan Tomek">
+    <div id="wygrana-content">
+        <div class="fenkju-napis">„Fenk Ju! 🙏"</div>
+        <div class="zapraszamy">Zapraszamy do naszej gildii!</div>
         <div class="wielki-dobry">🎉 GRATULACJE!<br>PAN TOMEK URATOWANY!</div>
-        <div class="liczba" id="wygranaLiczba">Po raz 1!</div>
+        <div class="liczba-wygranych" id="wygranaLiczba">🏆 Po raz 1!</div>
+        <button class="rejestruj-btn" onclick="alert('Rejestracja wkrótce! 🚀')">✅ Zarejestruj się</button>
     </div>
+</div>
 
-    <script>
-        let poprawna = false;
-        let konfidenci = parseInt(localStorage.getItem('konfidenci') || '0');
-        let uratowani = parseInt(localStorage.getItem('uratowani') || '0');
-        document.getElementById('licznikVal').textContent = konfidenci;
-        document.getElementById('licznikDobryVal').textContent = uratowani;
+<script>
+let poprawna = false;
+let konfidenci = parseInt(localStorage.getItem('konfidenci') || '0');
+let uratowani = parseInt(localStorage.getItem('uratowani') || '0');
+document.getElementById('licznikZlyVal').textContent = konfidenci;
+document.getElementById('licznikDobryVal').textContent = uratowani;
+document.getElementById('errorLicznikVal').textContent = konfidenci;
 
-        function pokazZagadke() {
-            document.getElementById('overlay').classList.add('active');
-            setTimeout(() => document.getElementById('odpowiedz').focus(), 100);
-        }
+// TOUCH
+const touchKeys = {};
+function bindTouch(id, key) {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.addEventListener('touchstart', e => { e.preventDefault(); touchKeys[key] = true; }, {passive:false});
+    btn.addEventListener('touchend', e => { e.preventDefault(); touchKeys[key] = false; }, {passive:false});
+    btn.addEventListener('mousedown', () => touchKeys[key] = true);
+    btn.addEventListener('mouseup', () => touchKeys[key] = false);
+}
+bindTouch('btnU','ArrowUp'); bindTouch('btnD','ArrowDown');
+bindTouch('btnL','ArrowLeft'); bindTouch('btnR','ArrowRight');
+bindTouch('wbtnL','wa'); bindTouch('wbtnR','wd');
 
-        function sprawdzOdpowiedz() {
-            const odp = document.getElementById('odpowiedz').value.trim().toLowerCase();
-            if (odp === '') { document.getElementById('error').textContent = '⚠️ Wpisz odpowiedź!'; return; }
-            poprawna = (odp === 'keto');
-            document.getElementById('overlay').classList.remove('active');
-            uruchomMiro();
-        }
+function pokazZagadke() {
+    document.getElementById('overlay').classList.add('active');
+    setTimeout(() => document.getElementById('odpowiedz').focus(), 100);
+}
 
-        function uruchomMiro() {
-            const scene = document.getElementById('miroScene');
-            const img = document.getElementById('miroImg');
-            scene.classList.add('active');
-            setTimeout(() => { img.classList.add('jedzie'); }, 100);
-            setTimeout(() => {
-                scene.classList.remove('active');
-                img.classList.remove('jedzie');
-                if (poprawna) {
-                    uruchomWalke();
-                } else {
-                    uruchomUcieczkę();
-                }
-            }, 2300);
-        }
+function sprawdzOdpowiedz() {
+    const odp = document.getElementById('odpowiedz').value.trim().toLowerCase();
+    if (odp === '') { document.getElementById('errorMsg').textContent = '⚠️ Wpisz odpowiedź!'; return; }
+    poprawna = (odp === 'keto');
+    document.getElementById('overlay').classList.remove('active');
+    uruchomMiro();
+}
 
-        // ========== GRA UCIECZKA ==========
-        function uruchomUcieczkę() {
-            document.getElementById('gra-screen').classList.add('active');
-            const muzyka = document.getElementById('muzyka');
-            muzyka.currentTime = 23;
-            muzyka.play();
-            startUcieczka();
-        }
-
-        function startUcieczka() {
-            const canvas = document.getElementById('gameCanvas');
-            const ctx = canvas.getContext('2d');
-            const W = canvas.width, H = canvas.height;
-            const odliczDiv = document.getElementById('odliczanie');
-
-            const gracz = { x: 60, y: H/2, size: 28, speed: 4 };
-            const dzeko = { x: W - 80, y: H/2, size: 40, speed: 0 };
-            const keys = {};
-            let running = true;
-            let dzekoCzyAktywny = false;
-
-            const dzImg = new Image(); dzImg.src = 'dzeko.jpg';
-
-            const onKey = e => { keys[e.key] = true; };
-            const offKey = e => { keys[e.key] = false; };
-            document.addEventListener('keydown', onKey);
-            document.addEventListener('keyup', offKey);
-
-            let count = 3;
-            odliczDiv.textContent = count;
-            odliczDiv.classList.add('show');
-
-            const odliczTimer = setInterval(() => {
-                count--;
-                if (count > 0) {
-                    odliczDiv.textContent = count;
-                } else if (count === 0) {
-                    odliczDiv.textContent = '🍞 GONI!';
-                    dzekoCzyAktywny = true;
-                    dzeko.speed = 1.5;
-                } else {
-                    odliczDiv.classList.remove('show');
-                    clearInterval(odliczTimer);
-                }
-            }, 1000);
-
-            function update() {
-                if (!running) return;
-                if ((keys['ArrowUp'] || keys['w'] || keys['W']) && gracz.y > gracz.size) gracz.y -= gracz.speed;
-                if ((keys['ArrowDown'] || keys['s'] || keys['S']) && gracz.y < H - gracz.size) gracz.y += gracz.speed;
-                if ((keys['ArrowLeft'] || keys['a'] || keys['A']) && gracz.x > gracz.size) gracz.x -= gracz.speed;
-                if ((keys['ArrowRight'] || keys['d'] || keys['D']) && gracz.x < W - gracz.size) gracz.x += gracz.speed;
-
-                const dx = gracz.x - dzeko.x;
-                const dy = gracz.y - dzeko.y;
-                const dist = Math.sqrt(dx*dx + dy*dy);
-
-                if (dzekoCzyAktywny) {
-                    dzeko.x += (dx/dist) * dzeko.speed;
-                    dzeko.y += (dy/dist) * dzeko.speed;
-                    dzeko.speed += 0.002;
-                }
-
-                if (dist < gracz.size + dzeko.size - 10) {
-                    running = false;
-                    clearInterval(odliczTimer);
-                    document.removeEventListener('keydown', onKey);
-                    document.removeEventListener('keyup', offKey);
-                    złapany();
-                    return;
-                }
-
-                ctx.fillStyle = '#111'; ctx.fillRect(0, 0, W, H);
-                ctx.strokeStyle = '#1e1e1e'; ctx.lineWidth = 1;
-                for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
-                for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
-
-                ctx.fillStyle = '#f0c060';
-                ctx.beginPath();
-                ctx.arc(gracz.x, gracz.y, gracz.size, 0.2*Math.PI, 1.8*Math.PI);
-                ctx.lineTo(gracz.x, gracz.y);
-                ctx.fill();
-
-                if (dzImg.complete) {
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.arc(dzeko.x, dzeko.y, dzeko.size, 0, Math.PI*2);
-                    ctx.clip();
-                    ctx.drawImage(dzImg, dzeko.x-dzeko.size, dzeko.y-dzeko.size, dzeko.size*2, dzeko.size*2);
-                    ctx.restore();
-                }
-
-                ctx.fillStyle = dzekoCzyAktywny ? '#ff4444' : '#f0c060';
-                ctx.font = '13px Georgia';
-                ctx.fillText(dzekoCzyAktywny ? '🍞 Dżeko goni! ' + dzeko.speed.toFixed(1) + 'x' : '⏳ Uciekaj!', 10, 22);
-                requestAnimationFrame(update);
-            }
-            update();
-        }
-
-        function złapany() {
-            document.getElementById('muzyka').pause();
-            document.getElementById('gra-screen').classList.remove('active');
-            konfidenci++;
-            localStorage.setItem('konfidenci', konfidenci);
-            document.getElementById('licznikVal').textContent = konfidenci;
-            document.getElementById('licznik').style.display = 'block';
-            document.getElementById('koniec-screen').classList.add('active');
-        }
-
-        // ========== GRA WALKA ==========
-        function uruchomWalke() {
+function uruchomMiro() {
+    const scene = document.getElementById('miroScene');
+    const img = document.getElementById('miroImg');
+    scene.classList.add('active');
+    setTimeout(() => img.classList.add('jedzie'), 100);
+    setTimeout(() => {
+        scene.classList.remove('active');
+        img.classList.remove('jedzie');
+        if (poprawna) {
             document.getElementById('walka-screen').classList.add('active');
-            const walka = document.getElementById('walka');
-            walka.currentTime = 0;
-            walka.play();
-            startWalka();
+            document.getElementById('walka').currentTime = 0;
+            document.getElementById('walka').play();
+        } else {
+            document.getElementById('gra-screen').classList.add('active');
+            document.getElementById('muzyka').currentTime = 23;
+            document.getElementById('muzyka').play();
         }
+    }, 2300);
+}
 
-        function startWalka() {
-            const canvas = document.getElementById('walkaCanvas');
-            const ctx = canvas.getContext('2d');
-            const W = canvas.width, H = canvas.height;
+// ======= UCIECZKA =======
+let ucieczkaBiegnaca = false;
+function startUcieczka() {
+    document.getElementById('startUcieczka').classList.remove('active');
+    ucieczkaBiegnaca = true;
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const gracz = {x:60, y:H/2, size:24, speed:4};
+    const dzeko = {x:W-70, y:H/2, size:36, speed:0};
+    const keys = {};
+    let dzekoCzyAktywny = false, count = 3;
+    const dzImg = new Image(); dzImg.src = 'dzeko.jpg';
+    document.addEventListener('keydown', e => keys[e.key]=true);
+    document.addEventListener('keyup', e => keys[e.key]=false);
+    const timer = setInterval(() => {
+        count--;
+        if (count===0) { dzekoCzyAktywny=true; dzeko.speed=1.5; }
+        if (count<0) clearInterval(timer);
+    }, 1000);
+    function allK() { return {...keys,...touchKeys}; }
+    function loop() {
+        if (!ucieczkaBiegnaca) return;
+        const k = allK();
+        if ((k['ArrowUp']||k['w']||k['W']) && gracz.y>gracz.size) gracz.y-=gracz.speed;
+        if ((k['ArrowDown']||k['s']||k['S']) && gracz.y<H-gracz.size) gracz.y+=gracz.speed;
+        if ((k['ArrowLeft']||k['a']||k['A']) && gracz.x>gracz.size) gracz.x-=gracz.speed;
+        if ((k['ArrowRight']||k['d']||k['D']) && gracz.x<W-gracz.size) gracz.x+=gracz.speed;
+        const dx=gracz.x-dzeko.x, dy=gracz.y-dzeko.y, dist=Math.sqrt(dx*dx+dy*dy);
+        if (dzekoCzyAktywny) { dzeko.x+=(dx/dist)*dzeko.speed; dzeko.y+=(dy/dist)*dzeko.speed; dzeko.speed+=0.002; }
+        if (dist<gracz.size+dzeko.size-8) { ucieczkaBiegnaca=false; clearInterval(timer); złapanyUcieczka(); return; }
+        ctx.fillStyle='#111'; ctx.fillRect(0,0,W,H);
+        ctx.strokeStyle='#1e1e1e'; ctx.lineWidth=1;
+        for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+        for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+        ctx.fillStyle='#f0c060';
+        ctx.beginPath(); ctx.arc(gracz.x,gracz.y,gracz.size,0.2*Math.PI,1.8*Math.PI); ctx.lineTo(gracz.x,gracz.y); ctx.fill();
+        if (dzImg.complete) { ctx.save(); ctx.beginPath(); ctx.arc(dzeko.x,dzeko.y,dzeko.size,0,Math.PI*2); ctx.clip(); ctx.drawImage(dzImg,dzeko.x-dzeko.size,dzeko.y-dzeko.size,dzeko.size*2,dzeko.size*2); ctx.restore(); }
+        ctx.fillStyle=dzekoCzyAktywny?'#ff4444':'#f0c060'; ctx.font='13px Georgia';
+        ctx.fillText(dzekoCzyAktywny?'🍞 Goni! '+dzeko.speed.toFixed(1)+'x':'⏳ Gotuj się! '+Math.max(0,count),10,22);
+        requestAnimationFrame(loop);
+    }
+    loop();
+}
 
-            const tomImg = new Image(); tomImg.src = 'tomek.jpg';
-            const dzImg = new Image(); dzImg.src = 'dzeko.jpg';
+function złapanyUcieczka() {
+    document.getElementById('muzyka').pause();
+    document.getElementById('gra-screen').classList.remove('active');
+    document.getElementById('koniec-screen').classList.add('active');
+    setTimeout(() => {
+        document.getElementById('koniec-screen').classList.remove('active');
+        konfidenci++;
+        localStorage.setItem('konfidenci', konfidenci);
+        document.getElementById('licznikZlyVal').textContent = konfidenci;
+        document.getElementById('licznikZly').style.display = 'block';
+        document.getElementById('errorLicznikVal').textContent = konfidenci;
+        document.getElementById('error-screen').classList.add('active');
+    }, 4000);
+}
 
-            const tomek = { x: 80, y: H/2, hp: 100, maxHp: 100, atakCD: 0, kierunek: 1 };
-            const dzeko = { x: W-80, y: H/2, hp: 100, maxHp: 100, atakCD: 0, kierunek: -1 };
-            const SIZE = 50;
-            const keys = {};
-            let running = true;
-            let efekty = [];
+// ======= WALKA =======
+let walkaBiegnaca = false;
+let atakTouchActive = false;
+document.getElementById('wbtnAtk').addEventListener('touchstart', e => { e.preventDefault(); atakTouchActive=true; }, {passive:false});
+document.getElementById('wbtnAtk').addEventListener('touchend', e => { e.preventDefault(); atakTouchActive=false; }, {passive:false});
+document.getElementById('wbtnAtk').addEventListener('mousedown', () => atakTouchActive=true);
+document.getElementById('wbtnAtk').addEventListener('mouseup', () => atakTouchActive=false);
 
-            const onKey = e => {
-                keys[e.key] = true;
-                if ((e.key === ' ' || e.key === 'Spacebar') && tomek.atakCD <= 0) {
-                    const dist = Math.abs(tomek.x - dzeko.x);
-                    if (dist < 130) {
-                        const dmg = Math.floor(Math.random() * 15) + 10;
-                        dzeko.hp = Math.max(0, dzeko.hp - dmg);
-                        tomek.atakCD = 40;
-                        efekty.push({ x: dzeko.x, y: dzeko.y - 60, txt: '-' + dmg + ' 💥', life: 40, color: '#ff4444' });
-                        if (dzeko.hp <= 0) { running = false; document.removeEventListener('keydown', onKey); document.removeEventListener('keyup', offKey); setTimeout(wygrana, 500); }
-                    } else {
-                        efekty.push({ x: tomek.x, y: tomek.y - 60, txt: 'Za daleko!', life: 30, color: '#f0c060' });
-                    }
-                }
-            };
-            const offKey = e => { keys[e.key] = false; };
-            document.addEventListener('keydown', onKey);
-            document.addEventListener('keyup', offKey);
+function startWalkaGra() {
+    document.getElementById('startWalka').classList.remove('active');
+    walkaBiegnaca = true;
+    const canvas = document.getElementById('walkaCanvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    const PODLOGA = H - 50;
+    const tomImg = new Image(); tomImg.src = 'tomek.jpg';
+    const dzImg = new Image(); dzImg.src = 'dzeko.jpg';
+    const tomek = {x:100, y:PODLOGA, hp:100, maxHp:100, atakCD:0, size:44, atakAnim:0};
+    const dzeko = {x:W-100, y:PODLOGA, hp:100, maxHp:100, atakCD:80, size:44, atakAnim:0};
+    const keys = {};
+    let efekty = [];
 
-            function update() {
-                if (!running) return;
-
-                // Tomek ruch
-                if ((keys['a'] || keys['A']) && tomek.x > SIZE) tomek.x -= 4;
-                if ((keys['d'] || keys['D']) && tomek.x < W/2) tomek.x += 4;
-
-                // Dżeko AI atakuje
-                dzeko.atakCD--;
-                if (dzeko.atakCD <= 0) {
-                    const dist = Math.abs(tomek.x - dzeko.x);
-                    if (dist < 130) {
-                        const dmg = Math.floor(Math.random() * 10) + 5;
-                        tomek.hp = Math.max(0, tomek.hp - dmg);
-                        dzeko.atakCD = 60;
-                        efekty.push({ x: tomek.x, y: tomek.y - 60, txt: '-' + dmg + ' 🍞', life: 40, color: '#ff6600' });
-                        if (tomek.hp <= 0) { running = false; document.removeEventListener('keydown', onKey); document.removeEventListener('keyup', offKey); setTimeout(złapanyWalka, 500); }
-                    } else {
-                        // Dżeko się zbliża
-                        dzeko.x -= 1.5;
-                        dzeko.atakCD = 5;
-                    }
-                }
-
-                // Rysuj
-                ctx.fillStyle = '#1a0a00'; ctx.fillRect(0, 0, W, H);
-
-                // Podłoga
-                ctx.fillStyle = '#2a1500';
-                ctx.fillRect(0, H - 60, W, 60);
-                ctx.fillStyle = '#3a2000';
-                ctx.fillRect(0, H - 62, W, 4);
-
-                // HP bary
-                function rysujHP(x, hp, max, label, kolor) {
-                    ctx.fillStyle = '#333'; ctx.fillRect(x, 15, 200, 20); ctx.beginPath();
-                    ctx.fillStyle = kolor; ctx.fillRect(x, 15, (hp/max)*200, 20);
-                    ctx.fillStyle = 'white'; ctx.font = 'bold 13px Georgia';
-                    ctx.fillText(label + ': ' + hp + '/100', x + 5, 30);
-                }
-                rysujHP(10, tomek.hp, tomek.maxHp, '💪 Tomek', '#44aa44');
-                rysujHP(W-210, dzeko.hp, dzeko.maxHp, '🍞 Dżeko', '#aa2222');
-
-                // VS napis
-                ctx.fillStyle = '#f0c060'; ctx.font = 'bold 20px Georgia';
-                ctx.textAlign = 'center';
-                ctx.fillText('VS', W/2, 30);
-                ctx.textAlign = 'left';
-
-                // Tomek
-                if (tomImg.complete) {
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.arc(tomek.x, H-80, SIZE, 0, Math.PI*2);
-                    ctx.clip();
-                    ctx.drawImage(tomImg, tomek.x-SIZE, H-80-SIZE, SIZE*2, SIZE*2);
-                    ctx.restore();
-                } else {
-                    ctx.fillStyle = '#44aa44';
-                    ctx.beginPath(); ctx.arc(tomek.x, H-80, SIZE, 0, Math.PI*2); ctx.fill();
-                }
-
-                // Dżeko
-                if (dzImg.complete) {
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.arc(dzeko.x, H-80, SIZE, 0, Math.PI*2);
-                    ctx.clip();
-                    ctx.drawImage(dzImg, dzeko.x-SIZE, H-80-SIZE, SIZE*2, SIZE*2);
-                    ctx.restore();
-                } else {
-                    ctx.fillStyle = '#aa2222';
-                    ctx.beginPath(); ctx.arc(dzeko.x, H-80, SIZE, 0, Math.PI*2); ctx.fill();
-                }
-
-                // Efekty
-                efekty = efekty.filter(e => e.life > 0);
-                efekty.forEach(e => {
-                    ctx.fillStyle = e.color;
-                    ctx.font = 'bold 18px Georgia';
-                    ctx.textAlign = 'center';
-                    ctx.globalAlpha = e.life / 40;
-                    ctx.fillText(e.txt, e.x, e.y - (40 - e.life));
-                    e.life--;
-                });
-                ctx.globalAlpha = 1;
-                ctx.textAlign = 'left';
-
-                // Podpowiedź
-                ctx.fillStyle = '#666'; ctx.font = '12px Georgia';
-                ctx.fillText('A/D = ruch | Spacja = atak (zbliż się!)', 10, H - 10);
-
-                requestAnimationFrame(update);
-            }
-            update();
+    function wykonajAtak() {
+        const dist = Math.abs(tomek.x-dzeko.x);
+        if (dist<130) {
+            const dmg = Math.floor(Math.random()*18)+10;
+            dzeko.hp = Math.max(0, dzeko.hp-dmg);
+            tomek.atakCD=35; tomek.atakAnim=20;
+            efekty.push({x:dzeko.x, y:dzeko.y-80, txt:'-'+dmg+' ⚔️', life:45, color:'#ff4444'});
+            if (dzeko.hp<=0) { walkaBiegnaca=false; setTimeout(wygranaWalka,500); }
+        } else {
+            tomek.atakAnim=10;
+            efekty.push({x:tomek.x, y:tomek.y-80, txt:'Za daleko!', life:30, color:'#f0c060'});
         }
+    }
 
-        function wygrana() {
-            document.getElementById('walka').pause();
-            document.getElementById('walka-screen').classList.remove('active');
-            uratowani++;
-            localStorage.setItem('uratowani', uratowani);
-            document.getElementById('licznikDobryVal').textContent = uratowani;
-            document.getElementById('licznikDobry').style.display = 'block';
-            document.getElementById('wygranaLiczba').textContent = '🏆 Po raz ' + uratowani + '!';
-            document.getElementById('wygrana-screen').classList.add('active');
+    document.addEventListener('keydown', e => {
+        keys[e.key]=true;
+        if ((e.key===' '||e.key==='Spacebar') && tomek.atakCD<=0) wykonajAtak();
+    });
+    document.addEventListener('keyup', e => keys[e.key]=false);
+
+    function allK() { return {...keys,...touchKeys}; }
+
+    function loop() {
+        if (!walkaBiegnaca) return;
+        const k = allK();
+        if (atakTouchActive && tomek.atakCD<=0) wykonajAtak();
+        if ((k['ArrowLeft']||k['a']||k['A']||k['wa']) && tomek.x>tomek.size) tomek.x-=4;
+        if ((k['ArrowRight']||k['d']||k['D']||k['wd']) && tomek.x<W/2+60) tomek.x+=4;
+        if (tomek.atakCD>0) tomek.atakCD--;
+        if (tomek.atakAnim>0) tomek.atakAnim--;
+        if (dzeko.atakAnim>0) dzeko.atakAnim--;
+        dzeko.atakCD--;
+        const dist = Math.abs(tomek.x-dzeko.x);
+        if (dzeko.atakCD<=0) {
+            if (dist<130) {
+                const dmg=Math.floor(Math.random()*8)+5;
+                tomek.hp=Math.max(0,tomek.hp-dmg);
+                dzeko.atakCD=70; dzeko.atakAnim=20;
+                efekty.push({x:tomek.x,y:tomek.y-80,txt:'-'+dmg+' 🍞',life:40,color:'#ff6600'});
+                if (tomek.hp<=0) { walkaBiegnaca=false; setTimeout(przegranaWalka,500); }
+            } else { dzeko.x=Math.max(W/2-20,dzeko.x-2); dzeko.atakCD=8; }
         }
-
-        function złapanyWalka() {
-            document.getElementById('walka').pause();
-            document.getElementById('walka-screen').classList.remove('active');
-            konfidenci++;
-            localStorage.setItem('konfidenci', konfidenci);
-            document.getElementById('licznikVal').textContent = konfidenci;
-            document.getElementById('licznik').style.display = 'block';
-            document.getElementById('koniec-screen').classList.add('active');
+        ctx.fillStyle='#1a0800'; ctx.fillRect(0,0,W,H);
+        ctx.fillStyle='#2a1500'; ctx.fillRect(0,PODLOGA+44,W,H);
+        ctx.fillStyle='#3d2000'; ctx.fillRect(0,PODLOGA+42,W,4);
+        function rysujHP(x,hp,max,label,kolor) {
+            ctx.fillStyle='#333'; ctx.fillRect(x,12,180,18);
+            ctx.fillStyle=kolor; ctx.fillRect(x,12,(hp/max)*180,18);
+            ctx.fillStyle='white'; ctx.font='bold 12px Georgia';
+            ctx.fillText(label+': '+hp,x+4,26);
         }
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                if (document.getElementById('overlay').classList.contains('active')) sprawdzOdpowiedz();
-            }
+        rysujHP(10,tomek.hp,tomek.maxHp,'💪 Tomek','#44aa44');
+        rysujHP(W-190,dzeko.hp,dzeko.maxHp,'🍞 Dżeko','#aa2222');
+        ctx.fillStyle='#f0c060'; ctx.font='bold 16px Georgia'; ctx.textAlign='center';
+        ctx.fillText('⚔️ VS ⚔️',W/2,26); ctx.textAlign='left';
+        if (tomek.atakAnim>0) { ctx.save(); ctx.strokeStyle='#f0c060'; ctx.lineWidth=5; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(tomek.x+20,tomek.y-20); ctx.lineTo(tomek.x+85,tomek.y-75); ctx.stroke(); ctx.restore(); }
+        if (dzeko.atakAnim>0) { ctx.save(); ctx.strokeStyle='#ff4444'; ctx.lineWidth=5; ctx.lineCap='round'; ctx.beginPath(); ctx.moveTo(dzeko.x-20,dzeko.y-20); ctx.lineTo(dzeko.x-85,dzeko.y-75); ctx.stroke(); ctx.restore(); }
+        if (tomImg.complete) { ctx.save(); ctx.beginPath(); ctx.arc(tomek.x,tomek.y,tomek.size,0,Math.PI*2); ctx.clip(); ctx.drawImage(tomImg,tomek.x-tomek.size,tomek.y-tomek.size,tomek.size*2,tomek.size*2); ctx.restore(); }
+        if (dzImg.complete) { ctx.save(); ctx.beginPath(); ctx.arc(dzeko.x,dzeko.y,dzeko.size,0,Math.PI*2); ctx.clip(); ctx.drawImage(dzImg,dzeko.x-dzeko.size,dzeko.y-dzeko.size,dzeko.size*2,dzeko.size*2); ctx.restore(); }
+        efekty=efekty.filter(e=>e.life>0);
+        efekty.forEach(e => {
+            ctx.globalAlpha=e.life/45; ctx.fillStyle=e.color; ctx.font='bold 16px Georgia'; ctx.textAlign='center';
+            ctx.fillText(e.txt,e.x,e.y-(45-e.life)*0.8); e.life--;
         });
-    </script>
+        ctx.globalAlpha=1; ctx.textAlign='left';
+        ctx.fillStyle='#555'; ctx.font='11px Georgia';
+        ctx.fillText('⬅️➡️ ruch | Spacja / 🗡️ = atak',8,H-6);
+        requestAnimationFrame(loop);
+    }
+    loop();
+}
 
+function wygranaWalka() {
+    document.getElementById('walka').pause();
+    document.getElementById('walka-screen').classList.remove('active');
+    uratowani++;
+    localStorage.setItem('uratowani', uratowani);
+    document.getElementById('licznikDobryVal').textContent = uratowani;
+    document.getElementById('licznikDobry').style.display = 'block';
+    document.getElementById('wygranaLiczba').textContent = '🏆 Po raz ' + uratowani + '!';
+    document.getElementById('wygrana-screen').classList.add('active');
+    setTimeout(() => document.getElementById('wygrana-content').classList.add('pokaz'), 400);
+}
+
+function przegranaWalka() {
+    document.getElementById('walka').pause();
+    document.getElementById('walka-screen').classList.remove('active');
+    document.getElementById('koniec-screen').classList.add('active');
+    setTimeout(() => {
+        document.getElementById('koniec-screen').classList.remove('active');
+        konfidenci++;
+        localStorage.setItem('konfidenci', konfidenci);
+        document.getElementById('licznikZlyVal').textContent = konfidenci;
+        document.getElementById('licznikZly').style.display = 'block';
+        document.getElementById('errorLicznikVal').textContent = konfidenci;
+        document.getElementById('error-screen').classList.add('active');
+    }, 4000);
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key==='Enter' && document.getElementById('overlay').classList.contains('active')) sprawdzOdpowiedz();
+});
+</script>
 </body>
 </html>
