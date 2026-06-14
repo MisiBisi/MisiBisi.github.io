@@ -3,138 +3,447 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TomCip.pl</title>
+    <title>TomCip.pl – PCKP</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { height: 100vh; font-family: Georgia, serif; overflow: hidden; }
 
-        body {
-            height: 100vh;
-            font-family: Georgia, serif;
-            overflow: hidden;
-        }
+        .hero { position: relative; width: 100%; height: 100vh; }
+        .hero img { width: 100%; height: 100%; object-fit: cover; object-position: center center; filter: brightness(0.5); }
+        .hero-text { position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: white; width: 60%; }
+        .hero-text h1 { font-size: 2.2em; line-height: 1.3; text-shadow: 3px 3px 10px rgba(0,0,0,0.9); margin-bottom: 20px; }
+        .hero-text h1 span { color: #f0c060; }
+        .enter-btn { display: inline-block; background: #8b1a1a; color: white; border: 3px solid #f0c060; padding: 16px 44px; border-radius: 50px; font-size: 1.1em; font-family: Georgia, serif; font-weight: bold; cursor: pointer; letter-spacing: 1px; transition: background 0.2s; }
+        .enter-btn:hover { background: #a02020; }
 
-        .hero {
-            position: relative;
-            width: 100%;
-            height: 100vh;
-        }
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
+        .overlay.active { display: flex; }
+        .modal { background: #1a1a1a; border: 2px solid #f0c060; border-radius: 16px; padding: 40px; text-align: center; color: white; max-width: 420px; width: 90%; }
+        .modal h2 { font-size: 1.6em; margin-bottom: 10px; color: #f0c060; }
+        .modal p { font-size: 1.1em; margin-bottom: 24px; color: #ccc; line-height: 1.5; }
+        .modal input { width: 100%; padding: 12px 16px; border-radius: 8px; border: 2px solid #f0c060; background: #2a2a2a; color: white; font-size: 1.1em; text-align: center; font-family: Georgia, serif; margin-bottom: 16px; outline: none; }
+        .modal button { background: #8b1a1a; color: white; border: 2px solid #f0c060; padding: 12px 36px; border-radius: 50px; font-size: 1em; font-weight: bold; cursor: pointer; font-family: Georgia, serif; }
+        .modal button:hover { background: #a02020; }
+        .error { color: #ff6b6b; margin-top: 12px; font-size: 0.95em; min-height: 20px; }
 
-        .hero img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center 20%;
-            filter: brightness(0.55);
-        }
+        .miro-scene { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: black; z-index: 300; overflow: hidden; align-items: center; justify-content: center; }
+        .miro-scene.active { display: flex; }
+        .miro-img { position: absolute; bottom: 10%; left: -350px; width: 320px; transition: left 2s ease-in-out; }
+        .miro-img.jedzie { left: 110%; }
 
-        .hero-text {
-            position: absolute;
-            top: 75%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            color: white;
-            text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
-            width: 90%;
-        }
+        /* GRA UCIECZKA */
+        #gra-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 400; flex-direction: column; align-items: center; justify-content: center; }
+        #gra-screen.active { display: flex; }
+        #gra-screen h2 { color: #f0c060; font-size: 1.5em; margin-bottom: 6px; }
+        #gra-screen p { color: #ccc; font-size: 0.95em; margin-bottom: 12px; }
+        #gameCanvas { border: 3px solid #f0c060; border-radius: 8px; }
+        #odliczanie { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 5em; color: #ff4444; font-weight: bold; text-shadow: 0 0 20px #ff0000; z-index: 10; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
+        #odliczanie.show { opacity: 1; }
 
-        .hero-text h1 {
-            font-size: 3em;
-            margin-bottom: 16px;
-            line-height: 1.2;
-        }
+        /* GRA WALKA */
+        #walka-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 400; flex-direction: column; align-items: center; justify-content: center; }
+        #walka-screen.active { display: flex; }
+        #walka-screen h2 { color: #f0c060; font-size: 1.5em; margin-bottom: 6px; }
+        #walka-screen p { color: #ccc; font-size: 0.9em; margin-bottom: 12px; }
+        #walkaCanvas { border: 3px solid #f0c060; border-radius: 8px; }
 
-        .hero-text p {
-            font-size: 1.5em;
-            color: #f0c060;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
+        /* KONIEC ZŁY */
+        #koniec-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0000; z-index: 500; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; }
+        #koniec-screen.active { display: flex; }
+        #koniec-screen .wielki { font-size: 2.5em; color: #ff3333; font-weight: bold; text-shadow: 0 0 20px #ff0000; line-height: 1.3; margin-bottom: 20px; animation: blink 0.8s infinite; }
+        #koniec-screen .maly { font-size: 1.4em; color: #f0c060; margin-top: 10px; }
+        #koniec-screen img { width: 200px; margin-bottom: 20px; border-radius: 12px; }
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-        .countdown {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
+        /* KONIEC DOBRY */
+        #wygrana-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a1a0a; z-index: 500; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; }
+        #wygrana-screen.active { display: flex; }
+        #wygrana-screen img { width: 220px; margin-bottom: 20px; border-radius: 16px; border: 4px solid #f0c060; }
+        #wygrana-screen .wielki-dobry { font-size: 2.2em; color: #f0c060; font-weight: bold; line-height: 1.3; margin-bottom: 10px; animation: glow 1.5s infinite; }
+        #wygrana-screen .liczba { font-size: 1.3em; color: #aaffaa; margin-top: 10px; }
+        @keyframes glow { 0%,100% { text-shadow: 0 0 10px #f0c060; } 50% { text-shadow: 0 0 30px #f0c060, 0 0 60px #ffaa00; } }
 
-        .countdown-box {
-            background: rgba(0,0,0,0.45);
-            border: 2px solid rgba(255,255,255,0.4);
-            border-radius: 12px;
-            padding: 12px 20px;
-            min-width: 80px;
-        }
-
-        .countdown-box span {
-            display: block;
-            font-size: 2.2em;
-            font-weight: bold;
-            color: #f0c060;
-            line-height: 1;
-        }
-
-        .countdown-box small {
-            font-size: 0.75em;
-            color: #ccc;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
+        /* LICZNIKI */
+        #licznik { display: none; position: fixed; top: 15px; right: 15px; background: rgba(0,0,0,0.75); border: 2px solid #ff4444; border-radius: 10px; padding: 10px 16px; color: white; font-size: 0.85em; z-index: 999; text-align: center; }
+        #licznik span { display: block; font-size: 1.6em; color: #ff4444; font-weight: bold; }
+        #licznikDobry { display: none; position: fixed; top: 15px; left: 15px; background: rgba(0,0,0,0.75); border: 2px solid #f0c060; border-radius: 10px; padding: 10px 16px; color: white; font-size: 0.85em; z-index: 999; text-align: center; }
+        #licznikDobry span { display: block; font-size: 1.6em; color: #f0c060; font-weight: bold; }
     </style>
 </head>
 <body>
 
+    <audio id="muzyka" src="muzyka.mp3" loop></audio>
+    <audio id="walka" src="walka.mp3" loop></audio>
+
+    <div id="licznik">💀 Konfidenci Dżeka<span id="licznikVal">0</span></div>
+    <div id="licznikDobry">💪 Tomek uratowany<span id="licznikDobryVal">0</span></div>
+
     <div class="hero">
-        <img src="tomek.jpg" alt="Tomek">
+        <img src="tlo.jpg" alt="PCKP">
         <div class="hero-text">
-            <h1>Więcej uśmiechu,<br>panie Tomku! 😄</h1>
-            <p>KetoDżek grasuje w pobliżu</p>
-            <div class="countdown">
-                <div class="countdown-box">
-                    <span id="days">00</span>
-                    <small>dni</small>
-                </div>
-                <div class="countdown-box">
-                    <span id="hours">00</span>
-                    <small>godz</small>
-                </div>
-                <div class="countdown-box">
-                    <span id="minutes">00</span>
-                    <small>min</small>
-                </div>
-                <div class="countdown-box">
-                    <span id="seconds">00</span>
-                    <small>sek</small>
-                </div>
-            </div>
+            <h1>Witamy na stronie grupy<br><span>PCKP</span><br>Jeżeli uważasz że jesteś gotowy<br>dołączyć do walki z Dżekim</h1>
+            <button class="enter-btn" onclick="pokazZagadke()">👊 Kliknij tutaj</button>
         </div>
     </div>
 
+    <div class="overlay" id="overlay">
+        <div class="modal">
+            <h2>🔐 Zagadka</h2>
+            <p>Jakim chlebem jest Dżek?</p>
+            <input type="text" id="odpowiedz" placeholder="Wpisz odpowiedź..." />
+            <br>
+            <button onclick="sprawdzOdpowiedz()">Sprawdź →</button>
+            <div class="error" id="error"></div>
+        </div>
+    </div>
+
+    <div class="miro-scene" id="miroScene">
+        <img class="miro-img" id="miroImg" src="miro.jpg" alt="Miro Tiro">
+    </div>
+
+    <!-- GRA UCIECZKA -->
+    <div id="gra-screen">
+        <h2>🎮 UCIEKAJ PRZED DŻEKIEM!</h2>
+        <p>Strzałki lub WASD — masz 3 sekundy przewagi!</p>
+        <div style="position:relative; display:inline-block;">
+            <canvas id="gameCanvas" width="600" height="380"></canvas>
+            <div id="odliczanie">3</div>
+        </div>
+    </div>
+
+    <!-- GRA WALKA -->
+    <div id="walka-screen">
+        <h2>⚔️ WALCZ Z DŻEKIEM!</h2>
+        <p>A/D = ruch | Spacja = atak | Pokonaj Dżeka!</p>
+        <canvas id="walkaCanvas" width="600" height="380"></canvas>
+    </div>
+
+    <!-- KONIEC ZŁY -->
+    <div id="koniec-screen">
+        <img src="dzeko.jpg" alt="Keto Dżeko">
+        <div class="wielki">NIC NIE MÓW!<br>NIC NIE MÓW!<br>NIE POGORSZAJ SWOJEJ SYTUACJI!</div>
+        <div class="maly">A TERAZ WYPIERDALAJ CZŁOWIEKU DŻEKA!!! 🍞</div>
+    </div>
+
+    <!-- KONIEC DOBRY -->
+    <div id="wygrana-screen">
+        <img src="tomek.jpg" alt="Pan Tomek">
+        <div class="wielki-dobry">🎉 GRATULACJE!<br>PAN TOMEK URATOWANY!</div>
+        <div class="liczba" id="wygranaLiczba">Po raz 1!</div>
+    </div>
+
     <script>
-        const target = new Date('2026-06-14T07:00:00');
+        let poprawna = false;
+        let konfidenci = parseInt(localStorage.getItem('konfidenci') || '0');
+        let uratowani = parseInt(localStorage.getItem('uratowani') || '0');
+        document.getElementById('licznikVal').textContent = konfidenci;
+        document.getElementById('licznikDobryVal').textContent = uratowani;
 
-        function update() {
-            const now = new Date();
-            const diff = target - now;
-
-            if (diff <= 0) {
-                document.querySelector('.countdown').innerHTML = '<p style="color:#f0c060;font-size:1.5em">🎉 Już jesteśmy!</p>';
-                return;
-            }
-
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-            document.getElementById('days').textContent = String(days).padStart(2, '0');
-            document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-            document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-            document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+        function pokazZagadke() {
+            document.getElementById('overlay').classList.add('active');
+            setTimeout(() => document.getElementById('odpowiedz').focus(), 100);
         }
 
-        update();
-        setInterval(update, 1000);
+        function sprawdzOdpowiedz() {
+            const odp = document.getElementById('odpowiedz').value.trim().toLowerCase();
+            if (odp === '') { document.getElementById('error').textContent = '⚠️ Wpisz odpowiedź!'; return; }
+            poprawna = (odp === 'keto');
+            document.getElementById('overlay').classList.remove('active');
+            uruchomMiro();
+        }
+
+        function uruchomMiro() {
+            const scene = document.getElementById('miroScene');
+            const img = document.getElementById('miroImg');
+            scene.classList.add('active');
+            setTimeout(() => { img.classList.add('jedzie'); }, 100);
+            setTimeout(() => {
+                scene.classList.remove('active');
+                img.classList.remove('jedzie');
+                if (poprawna) {
+                    uruchomWalke();
+                } else {
+                    uruchomUcieczkę();
+                }
+            }, 2300);
+        }
+
+        // ========== GRA UCIECZKA ==========
+        function uruchomUcieczkę() {
+            document.getElementById('gra-screen').classList.add('active');
+            const muzyka = document.getElementById('muzyka');
+            muzyka.currentTime = 23;
+            muzyka.play();
+            startUcieczka();
+        }
+
+        function startUcieczka() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+            const odliczDiv = document.getElementById('odliczanie');
+
+            const gracz = { x: 60, y: H/2, size: 28, speed: 4 };
+            const dzeko = { x: W - 80, y: H/2, size: 40, speed: 0 };
+            const keys = {};
+            let running = true;
+            let dzekoCzyAktywny = false;
+
+            const dzImg = new Image(); dzImg.src = 'dzeko.jpg';
+
+            const onKey = e => { keys[e.key] = true; };
+            const offKey = e => { keys[e.key] = false; };
+            document.addEventListener('keydown', onKey);
+            document.addEventListener('keyup', offKey);
+
+            let count = 3;
+            odliczDiv.textContent = count;
+            odliczDiv.classList.add('show');
+
+            const odliczTimer = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    odliczDiv.textContent = count;
+                } else if (count === 0) {
+                    odliczDiv.textContent = '🍞 GONI!';
+                    dzekoCzyAktywny = true;
+                    dzeko.speed = 1.5;
+                } else {
+                    odliczDiv.classList.remove('show');
+                    clearInterval(odliczTimer);
+                }
+            }, 1000);
+
+            function update() {
+                if (!running) return;
+                if ((keys['ArrowUp'] || keys['w'] || keys['W']) && gracz.y > gracz.size) gracz.y -= gracz.speed;
+                if ((keys['ArrowDown'] || keys['s'] || keys['S']) && gracz.y < H - gracz.size) gracz.y += gracz.speed;
+                if ((keys['ArrowLeft'] || keys['a'] || keys['A']) && gracz.x > gracz.size) gracz.x -= gracz.speed;
+                if ((keys['ArrowRight'] || keys['d'] || keys['D']) && gracz.x < W - gracz.size) gracz.x += gracz.speed;
+
+                const dx = gracz.x - dzeko.x;
+                const dy = gracz.y - dzeko.y;
+                const dist = Math.sqrt(dx*dx + dy*dy);
+
+                if (dzekoCzyAktywny) {
+                    dzeko.x += (dx/dist) * dzeko.speed;
+                    dzeko.y += (dy/dist) * dzeko.speed;
+                    dzeko.speed += 0.002;
+                }
+
+                if (dist < gracz.size + dzeko.size - 10) {
+                    running = false;
+                    clearInterval(odliczTimer);
+                    document.removeEventListener('keydown', onKey);
+                    document.removeEventListener('keyup', offKey);
+                    złapany();
+                    return;
+                }
+
+                ctx.fillStyle = '#111'; ctx.fillRect(0, 0, W, H);
+                ctx.strokeStyle = '#1e1e1e'; ctx.lineWidth = 1;
+                for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+                for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+                ctx.fillStyle = '#f0c060';
+                ctx.beginPath();
+                ctx.arc(gracz.x, gracz.y, gracz.size, 0.2*Math.PI, 1.8*Math.PI);
+                ctx.lineTo(gracz.x, gracz.y);
+                ctx.fill();
+
+                if (dzImg.complete) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(dzeko.x, dzeko.y, dzeko.size, 0, Math.PI*2);
+                    ctx.clip();
+                    ctx.drawImage(dzImg, dzeko.x-dzeko.size, dzeko.y-dzeko.size, dzeko.size*2, dzeko.size*2);
+                    ctx.restore();
+                }
+
+                ctx.fillStyle = dzekoCzyAktywny ? '#ff4444' : '#f0c060';
+                ctx.font = '13px Georgia';
+                ctx.fillText(dzekoCzyAktywny ? '🍞 Dżeko goni! ' + dzeko.speed.toFixed(1) + 'x' : '⏳ Uciekaj!', 10, 22);
+                requestAnimationFrame(update);
+            }
+            update();
+        }
+
+        function złapany() {
+            document.getElementById('muzyka').pause();
+            document.getElementById('gra-screen').classList.remove('active');
+            konfidenci++;
+            localStorage.setItem('konfidenci', konfidenci);
+            document.getElementById('licznikVal').textContent = konfidenci;
+            document.getElementById('licznik').style.display = 'block';
+            document.getElementById('koniec-screen').classList.add('active');
+        }
+
+        // ========== GRA WALKA ==========
+        function uruchomWalke() {
+            document.getElementById('walka-screen').classList.add('active');
+            const walka = document.getElementById('walka');
+            walka.currentTime = 0;
+            walka.play();
+            startWalka();
+        }
+
+        function startWalka() {
+            const canvas = document.getElementById('walkaCanvas');
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width, H = canvas.height;
+
+            const tomImg = new Image(); tomImg.src = 'tomek.jpg';
+            const dzImg = new Image(); dzImg.src = 'dzeko.jpg';
+
+            const tomek = { x: 80, y: H/2, hp: 100, maxHp: 100, atakCD: 0, kierunek: 1 };
+            const dzeko = { x: W-80, y: H/2, hp: 100, maxHp: 100, atakCD: 0, kierunek: -1 };
+            const SIZE = 50;
+            const keys = {};
+            let running = true;
+            let efekty = [];
+
+            const onKey = e => {
+                keys[e.key] = true;
+                if ((e.key === ' ' || e.key === 'Spacebar') && tomek.atakCD <= 0) {
+                    const dist = Math.abs(tomek.x - dzeko.x);
+                    if (dist < 130) {
+                        const dmg = Math.floor(Math.random() * 15) + 10;
+                        dzeko.hp = Math.max(0, dzeko.hp - dmg);
+                        tomek.atakCD = 40;
+                        efekty.push({ x: dzeko.x, y: dzeko.y - 60, txt: '-' + dmg + ' 💥', life: 40, color: '#ff4444' });
+                        if (dzeko.hp <= 0) { running = false; document.removeEventListener('keydown', onKey); document.removeEventListener('keyup', offKey); setTimeout(wygrana, 500); }
+                    } else {
+                        efekty.push({ x: tomek.x, y: tomek.y - 60, txt: 'Za daleko!', life: 30, color: '#f0c060' });
+                    }
+                }
+            };
+            const offKey = e => { keys[e.key] = false; };
+            document.addEventListener('keydown', onKey);
+            document.addEventListener('keyup', offKey);
+
+            function update() {
+                if (!running) return;
+
+                // Tomek ruch
+                if ((keys['a'] || keys['A']) && tomek.x > SIZE) tomek.x -= 4;
+                if ((keys['d'] || keys['D']) && tomek.x < W/2) tomek.x += 4;
+
+                // Dżeko AI atakuje
+                dzeko.atakCD--;
+                if (dzeko.atakCD <= 0) {
+                    const dist = Math.abs(tomek.x - dzeko.x);
+                    if (dist < 130) {
+                        const dmg = Math.floor(Math.random() * 10) + 5;
+                        tomek.hp = Math.max(0, tomek.hp - dmg);
+                        dzeko.atakCD = 60;
+                        efekty.push({ x: tomek.x, y: tomek.y - 60, txt: '-' + dmg + ' 🍞', life: 40, color: '#ff6600' });
+                        if (tomek.hp <= 0) { running = false; document.removeEventListener('keydown', onKey); document.removeEventListener('keyup', offKey); setTimeout(złapanyWalka, 500); }
+                    } else {
+                        // Dżeko się zbliża
+                        dzeko.x -= 1.5;
+                        dzeko.atakCD = 5;
+                    }
+                }
+
+                // Rysuj
+                ctx.fillStyle = '#1a0a00'; ctx.fillRect(0, 0, W, H);
+
+                // Podłoga
+                ctx.fillStyle = '#2a1500';
+                ctx.fillRect(0, H - 60, W, 60);
+                ctx.fillStyle = '#3a2000';
+                ctx.fillRect(0, H - 62, W, 4);
+
+                // HP bary
+                function rysujHP(x, hp, max, label, kolor) {
+                    ctx.fillStyle = '#333'; ctx.fillRect(x, 15, 200, 20); ctx.beginPath();
+                    ctx.fillStyle = kolor; ctx.fillRect(x, 15, (hp/max)*200, 20);
+                    ctx.fillStyle = 'white'; ctx.font = 'bold 13px Georgia';
+                    ctx.fillText(label + ': ' + hp + '/100', x + 5, 30);
+                }
+                rysujHP(10, tomek.hp, tomek.maxHp, '💪 Tomek', '#44aa44');
+                rysujHP(W-210, dzeko.hp, dzeko.maxHp, '🍞 Dżeko', '#aa2222');
+
+                // VS napis
+                ctx.fillStyle = '#f0c060'; ctx.font = 'bold 20px Georgia';
+                ctx.textAlign = 'center';
+                ctx.fillText('VS', W/2, 30);
+                ctx.textAlign = 'left';
+
+                // Tomek
+                if (tomImg.complete) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(tomek.x, H-80, SIZE, 0, Math.PI*2);
+                    ctx.clip();
+                    ctx.drawImage(tomImg, tomek.x-SIZE, H-80-SIZE, SIZE*2, SIZE*2);
+                    ctx.restore();
+                } else {
+                    ctx.fillStyle = '#44aa44';
+                    ctx.beginPath(); ctx.arc(tomek.x, H-80, SIZE, 0, Math.PI*2); ctx.fill();
+                }
+
+                // Dżeko
+                if (dzImg.complete) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(dzeko.x, H-80, SIZE, 0, Math.PI*2);
+                    ctx.clip();
+                    ctx.drawImage(dzImg, dzeko.x-SIZE, H-80-SIZE, SIZE*2, SIZE*2);
+                    ctx.restore();
+                } else {
+                    ctx.fillStyle = '#aa2222';
+                    ctx.beginPath(); ctx.arc(dzeko.x, H-80, SIZE, 0, Math.PI*2); ctx.fill();
+                }
+
+                // Efekty
+                efekty = efekty.filter(e => e.life > 0);
+                efekty.forEach(e => {
+                    ctx.fillStyle = e.color;
+                    ctx.font = 'bold 18px Georgia';
+                    ctx.textAlign = 'center';
+                    ctx.globalAlpha = e.life / 40;
+                    ctx.fillText(e.txt, e.x, e.y - (40 - e.life));
+                    e.life--;
+                });
+                ctx.globalAlpha = 1;
+                ctx.textAlign = 'left';
+
+                // Podpowiedź
+                ctx.fillStyle = '#666'; ctx.font = '12px Georgia';
+                ctx.fillText('A/D = ruch | Spacja = atak (zbliż się!)', 10, H - 10);
+
+                requestAnimationFrame(update);
+            }
+            update();
+        }
+
+        function wygrana() {
+            document.getElementById('walka').pause();
+            document.getElementById('walka-screen').classList.remove('active');
+            uratowani++;
+            localStorage.setItem('uratowani', uratowani);
+            document.getElementById('licznikDobryVal').textContent = uratowani;
+            document.getElementById('licznikDobry').style.display = 'block';
+            document.getElementById('wygranaLiczba').textContent = '🏆 Po raz ' + uratowani + '!';
+            document.getElementById('wygrana-screen').classList.add('active');
+        }
+
+        function złapanyWalka() {
+            document.getElementById('walka').pause();
+            document.getElementById('walka-screen').classList.remove('active');
+            konfidenci++;
+            localStorage.setItem('konfidenci', konfidenci);
+            document.getElementById('licznikVal').textContent = konfidenci;
+            document.getElementById('licznik').style.display = 'block';
+            document.getElementById('koniec-screen').classList.add('active');
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                if (document.getElementById('overlay').classList.contains('active')) sprawdzOdpowiedz();
+            }
+        });
     </script>
 
 </body>
