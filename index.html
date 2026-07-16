@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TomCip.pl – PCKP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Special+Elite&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { height: 100vh; font-family: Georgia, serif; overflow: hidden; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
@@ -72,7 +75,7 @@
         .error-opis { font-size: clamp(0.8em, 2vw, 0.95em); color: #666; font-family: monospace; }
         .error-podpis { font-size: clamp(0.9em, 2.5vw, 1.1em); color: #ff6600; margin-top: 16px; font-weight: bold; border-top: 1px solid #ff0000; padding-top: 14px; }
 
-        /* WYGRANA — Tomek jako tło */
+        /* WYGRANA */
         #wygrana-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 500; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; overflow: hidden; }
         #wygrana-screen.active { display: flex; }
         #wygrana-bg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; filter: brightness(0.45); z-index: 0; }
@@ -86,7 +89,37 @@
         .rejestruj-btn:active { background: #e0a830; transform: scale(0.97); }
         @keyframes glow { 0%,100%{text-shadow:0 0 10px #f0c060;}50%{text-shadow:0 0 30px #f0c060,0 0 60px #ffaa00;} }
 
-        /* LICZNIKI */
+        /* BAZA TOMCIPOLICJI */
+        #baza-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 700; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+        #baza-screen.active { display: flex; }
+        .baza-stempel { color: #ff3333; border: 3px solid #ff3333; padding: 6px 22px; font-family: 'Special Elite', monospace; font-size: clamp(0.85em,3vw,1.1em); letter-spacing: 4px; transform: rotate(-6deg); margin-bottom: 28px; display: inline-block; animation: blink 1.4s infinite; }
+        .baza-tytul { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.4em,10vw,5.5em); color: #f0c060; letter-spacing: 3px; line-height: 1.05; text-shadow: 0 0 25px rgba(240,192,96,0.4); margin-bottom: 18px; }
+        .baza-podtytul { font-family: 'Special Elite', monospace; font-size: clamp(1em,3.2vw,1.4em); color: #aaa; margin-bottom: 36px; }
+        .kursor { animation: blink 0.8s infinite; }
+        .dalej-btn { background: #8b1a1a; color: white; border: 2px solid #f0c060; padding: 14px 42px; border-radius: 50px; font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; font-size: clamp(1.1em,3.8vw,1.4em); cursor: pointer; }
+        .dalej-btn:active { background: #a02020; transform: scale(0.97); }
+
+        /* GRUPA MININKÓW */
+        #grupa-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0000; z-index: 710; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; }
+        #grupa-screen.active { display: flex; }
+        .grupa-nr { font-family: 'Special Elite', monospace; color: #ff6666; font-size: clamp(0.8em,2.5vw,1em); letter-spacing: 2px; margin-bottom: 20px; opacity: 0.85; }
+        .grupa-tytul { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.8em,7.5vw,3.6em); color: #ff3333; letter-spacing: 2px; line-height: 1.15; text-shadow: 0 0 20px rgba(255,50,50,0.4); margin-bottom: 20px; }
+        .grupa-opis { font-family: 'Special Elite', monospace; color: #ccc; font-size: clamp(0.9em,2.8vw,1.15em); margin-bottom: 32px; max-width: 480px; }
+        .czlonkowie-btn { background: #1a1a1a; color: #f0c060; border: 2px solid #f0c060; padding: 14px 40px; border-radius: 50px; font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; font-size: clamp(1.1em,3.8vw,1.4em); cursor: pointer; }
+        .czlonkowie-btn:active { background: #2a2a2a; transform: scale(0.97); }
+
+        /* KARTOTEKA / PROFIL */
+        #czlonkowie-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0a0a0a; z-index: 720; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; flex-direction: column; }
+        #czlonkowie-screen.active { display: flex; }
+        .profil-karta { background: #151515; border: 2px solid #f0c060; border-radius: 12px; max-width: 520px; width: 100%; overflow: hidden; }
+        .profil-naglowek { background: #8b1a1a; color: white; font-family: 'Special Elite', monospace; font-size: clamp(0.8em,2.5vw,1em); letter-spacing: 2px; padding: 10px; text-align: center; }
+        .profil-body { display: flex; flex-wrap: wrap; gap: 20px; padding: 24px; justify-content: center; }
+        .profil-zdjecie { flex: 0 0 140px; height: 170px; background-color: #1e1e1e; background-image: repeating-linear-gradient(to bottom, transparent, transparent 23px, rgba(255,255,255,0.06) 23px, rgba(255,255,255,0.06) 24px); border: 2px dashed #555; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #666; font-family: 'Special Elite', monospace; font-size: 0.8em; text-align: center; }
+        .profil-info { flex: 1; min-width: 220px; text-align: left; color: #ddd; font-family: 'Special Elite', monospace; font-size: clamp(0.8em,2.5vw,0.95em); }
+        .profil-wiersz { margin-bottom: 12px; line-height: 1.4; border-bottom: 1px solid #2a2a2a; padding-bottom: 8px; }
+        .profil-etykieta { color: #f0c060; display: block; font-size: 0.85em; letter-spacing: 1px; margin-bottom: 2px; }
+        .powrot-link { display: block; text-align: center; color: #666; font-size: 0.85em; margin-top: 18px; text-decoration: none; font-family: Georgia, serif; }
+
         #licznikDobry { display: none; position: fixed; top: 15px; left: 15px; background: rgba(0,0,0,0.8); border: 2px solid #f0c060; border-radius: 10px; padding: 8px 14px; color: white; font-size: 0.8em; z-index: 999; text-align: center; }
         #licznikDobry span { display: block; font-size: 1.5em; color: #f0c060; font-weight: bold; }
         #licznikZly { display: none; position: fixed; top: 15px; right: 15px; background: rgba(0,0,0,0.8); border: 2px solid #ff4444; border-radius: 10px; padding: 8px 14px; color: white; font-size: 0.8em; z-index: 999; text-align: center; }
@@ -114,7 +147,7 @@
 <div class="overlay" id="overlay">
     <div class="modal">
         <h2>🔐 Zagadka</h2>
-        <p>Jakim chlebem jest Dżek?</p>
+        <p>Spocony Jacek to?</p>
         <input type="text" id="odpowiedz" placeholder="Wpisz odpowiedź...">
         <br>
         <button onclick="sprawdzOdpowiedz()">Sprawdź →</button>
@@ -192,12 +225,46 @@
 <div id="wygrana-screen">
     <img id="wygrana-bg" src="tomek.jpg" alt="Pan Tomek">
     <div id="wygrana-content">
-        <div class="fenkju-napis">„Fenk Ju! 🙏"</div>
+        <div class="fenkju-napis">"Fenk Ju! 🙏"</div>
         <div class="zapraszamy">Zapraszamy do naszej gildii!</div>
         <div class="wielki-dobry">🎉 GRATULACJE!<br>PAN TOMEK URATOWANY!</div>
         <div class="liczba-wygranych" id="wygranaLiczba">🏆 Po raz 1!</div>
-        <button class="rejestruj-btn" onclick="alert('Rejestracja wkrótce! 🚀')">✅ Zarejestruj się</button>
+        <button class="rejestruj-btn" onclick="pokazBaze()">✅ Zarejestruj się</button>
     </div>
+</div>
+
+<!-- BAZA TOMCIPOLICJI -->
+<div id="baza-screen">
+    <div class="baza-stempel">🚔 TAJNE</div>
+    <h1 class="baza-tytul">WITAMY W BAZIE<br>TOMCIPOLICJI</h1>
+    <p class="baza-podtytul">Operacja "Mirnionki" trwa<span class="kursor">_</span></p>
+    <button class="dalej-btn" onclick="pokazGrupe()">DALEJ →</button>
+</div>
+
+<!-- GRUPA MININKÓW -->
+<div id="grupa-screen">
+    <div class="grupa-nr">AKTA SPRAWY NR. 001/DŻEK</div>
+    <h1 class="grupa-tytul">ZORGANIZOWANA GRUPA<br>MININKÓW DŻEKA</h1>
+    <p class="grupa-opis">Śledztwo w toku. Kliknij poniżej, aby zobaczyć kartotekę podejrzanych.</p>
+    <button class="czlonkowie-btn" onclick="pokazCzlonkow()">👥 CZŁONKOWIE</button>
+</div>
+
+<!-- KARTOTEKA CZŁONKÓW -->
+<div id="czlonkowie-screen">
+    <div class="profil-karta">
+        <div class="profil-naglowek">KARTOTEKA PODEJRZANEGO — AKTA #001</div>
+        <div class="profil-body">
+            <div class="profil-zdjecie">BRAK<br>ZDJĘCIA</div>
+            <div class="profil-info">
+                <div class="profil-wiersz"><span class="profil-etykieta">PSEUDONIM</span>Keto Dżeko</div>
+                <div class="profil-wiersz"><span class="profil-etykieta">STATUS</span><span style="color:#ff4444">🔴 POSZUKIWANY</span></div>
+                <div class="profil-wiersz"><span class="profil-etykieta">OSTATNIO WIDZIANY</span>W pobliżu cukierni "Słodki Dżek"</div>
+                <div class="profil-wiersz"><span class="profil-etykieta">ZARZUTY</span>Konfidencja, fałszywe składniki keto, zastraszanie ciastkami</div>
+                <div class="profil-wiersz"><span class="profil-etykieta">POZIOM ZAGROŻENIA</span>⚠️⚠️⚠️⚠️⚠️ (5/5)</div>
+            </div>
+        </div>
+    </div>
+    <a href="#" class="powrot-link" onclick="location.reload(); return false;">🏠 Wróć na stronę główną</a>
 </div>
 
 <script>
@@ -208,7 +275,6 @@ document.getElementById('licznikZlyVal').textContent = konfidenci;
 document.getElementById('licznikDobryVal').textContent = uratowani;
 document.getElementById('errorLicznikVal').textContent = konfidenci;
 
-// TOUCH
 const touchKeys = {};
 function bindTouch(id, key) {
     const btn = document.getElementById(id);
@@ -230,7 +296,7 @@ function pokazZagadke() {
 function sprawdzOdpowiedz() {
     const odp = document.getElementById('odpowiedz').value.trim().toLowerCase();
     if (odp === '') { document.getElementById('errorMsg').textContent = '⚠️ Wpisz odpowiedź!'; return; }
-    poprawna = (odp === 'keto');
+    poprawna = (odp === 'jackpot');
     document.getElementById('overlay').classList.remove('active');
     uruchomMiro();
 }
@@ -434,6 +500,20 @@ function przegranaWalka() {
         document.getElementById('errorLicznikVal').textContent = konfidenci;
         document.getElementById('error-screen').classList.add('active');
     }, 4000);
+}
+
+// ======= NOWE: TOMCIPOLICJA =======
+function pokazBaze() {
+    document.getElementById('wygrana-screen').classList.remove('active');
+    document.getElementById('baza-screen').classList.add('active');
+}
+function pokazGrupe() {
+    document.getElementById('baza-screen').classList.remove('active');
+    document.getElementById('grupa-screen').classList.add('active');
+}
+function pokazCzlonkow() {
+    document.getElementById('grupa-screen').classList.remove('active');
+    document.getElementById('czlonkowie-screen').classList.add('active');
 }
 
 document.addEventListener('keydown', e => {
